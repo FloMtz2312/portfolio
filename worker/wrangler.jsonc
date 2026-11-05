@@ -3,6 +3,9 @@
   "name": "portfolio",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
+  // Garde les variables ajoutées dans le tableau de bord Cloudflare : sans ça, chaque déploiement
+  // les remplace par celles ci-dessous. (Les secrets, eux, sont toujours conservés.)
+  "keep_vars": true,
   "vars": {
     // Sans domaine vérifié chez Resend, seul onboarding@resend.dev fonctionne,
     // et uniquement vers l'adresse de ton compte Resend.
