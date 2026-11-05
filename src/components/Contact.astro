@@ -1,0 +1,60 @@
+---
+import { site } from '../data/site';
+---
+
+<section class="blk" id="contact">
+  <div class="contact glass">
+    <h2 class="chrome">Un projet en tête&nbsp;?</h2>
+    <p class="note">{site.contactNote}</p>
+    <div class="mail">
+      <a class="addr" href={`mailto:${site.email}`} id="mail">{site.email}</a>
+      <button type="button" class="btn solid" id="copy">Copier l’adresse</button>
+    </div>
+    <span class="copied" id="copied" aria-live="polite"></span>
+  </div>
+</section>
+
+<style>
+  .contact { --r: 36px; padding: clamp(28px, 5vw, 56px); display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(26px, 4.6vw, 56px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: 0.02em;
+    text-wrap: balance;
+  }
+  .note { margin: 0; font-size: clamp(17px, 1.8vw, 21px); font-weight: 300; color: #b9bfcb; }
+  .mail { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; max-width: 100%; }
+  .addr {
+    font: 500 clamp(15px, 2vw, 19px) var(--f-mono);
+    text-decoration: none;
+    padding: 13px 20px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    word-break: break-all;
+  }
+  .addr:hover { box-shadow: inset 0 0 0 1px var(--ice); }
+  .copied { font: 13px var(--f-mono); color: var(--live); min-height: 1.2em; }
+</style>
+
+<script>
+  const out = document.getElementById('copied')!;
+  const mail = document.getElementById('mail')!;
+  document.getElementById('copy')!.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(mail.textContent || '');
+      out.textContent = 'Adresse copiée';
+    } catch {
+      const r = document.createRange();
+      r.selectNodeContents(mail);
+      const s = getSelection();
+      s?.removeAllRanges();
+      s?.addRange(r);
+      out.textContent = 'Adresse sélectionnée : Ctrl/Cmd + C pour copier';
+    }
+  });
+</script>

@@ -1,0 +1,306 @@
+---
+import { projects } from '../data/projects';
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const withBase = projects.map((p) => ({ ...p, images: p.images.map((im) => ({ ...im, src: base + im.src })) }));
+const years = [...new Set(projects.map((p) => p.year))].sort();
+const span = years.length > 1 ? `${years[0]} – ${years[years.length - 1]}` : String(years[0]);
+---
+
+<section class="blk" id="travaux">
+  <div class="blk-head">
+    <h2>Travaux</h2>
+    <span class="on-bg">{projects.length} projets · {span}</span>
+  </div>
+
+  <div class="projects">
+    {
+      withBase.map((p) => (
+        <a class="proj glass" href={`#${p.id}`} data-p={p.id} aria-haspopup="dialog">
+          <div class="thumb">
+            <img src={p.images[0].src} alt={p.images[0].alt} loading="lazy" decoding="async" width="1600" height="1000" />
+          </div>
+          <div class="proj-body">
+            <div class="proj-top">
+              <h3>{p.title}</h3>
+              <span class="yr">{p.year}</span>
+            </div>
+            <p>{p.summary}</p>
+            <span class="metric">{p.metric}</span>
+            <div class="chips">
+              {p.cardStack.map((s) => (
+                <span class="chip">{s}</span>
+              ))}
+            </div>
+            <span class="more">
+              Détails et captures <span aria-hidden="true">→</span>
+            </span>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>
+
+<dialog class="pm" id="pm" aria-labelledby="pm-title">
+  <div class="pm-panel glass">
+    <div class="pm-head">
+      <div>
+        <span class="pm-eyebrow" id="pm-eyebrow"></span>
+        <h2 class="pm-title chrome" id="pm-title"></h2>
+        <p class="pm-tag" id="pm-tag"></p>
+      </div>
+      <button type="button" class="pm-x" id="pm-x" aria-label="Fermer">✕</button>
+    </div>
+    <div class="pm-viewer" id="pm-viewer">
+      <img id="pm-img" alt="" />
+      <button type="button" class="pm-nav pm-prev" id="pm-prev" aria-label="Capture précédente">‹</button>
+      <button type="button" class="pm-nav pm-next" id="pm-next" aria-label="Capture suivante">›</button>
+      <span class="pm-count" id="pm-count" aria-live="polite"></span>
+    </div>
+    <p class="pm-cap" id="pm-cap"></p>
+    <div class="pm-thumbs" id="pm-thumbs" aria-label="Captures"></div>
+    <div class="pm-body">
+      <div>
+        <h3>Le projet</h3>
+        <p class="pm-desc" id="pm-desc"></p>
+        <h3>Ce qu’il fait</h3>
+        <ul class="pm-feat" id="pm-feat"></ul>
+      </div>
+      <aside class="pm-aside">
+        <div><h3>Stack</h3><div class="chips" id="pm-stack"></div></div>
+        <div><h3>En bref</h3><span class="pm-metric" id="pm-metric"></span></div>
+        <div class="pm-links" id="pm-links"></div>
+        <span class="pm-note" id="pm-note"></span>
+      </aside>
+    </div>
+  </div>
+</dialog>
+
+<script type="application/json" id="projects-data" set:html={JSON.stringify(withBase)} />
+
+<style>
+  .projects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .proj { padding: 14px; display: flex; flex-direction: column; gap: 16px; text-decoration: none; overflow: hidden; transition: transform 0.45s cubic-bezier(0.3, 1.5, 0.5, 1); }
+  .proj:hover { transform: translateY(-4px); }
+  .proj::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
+    background: radial-gradient(240px circle at var(--px, 50%) var(--py, 50%), rgba(255, 255, 255, 0.12), transparent 60%);
+  }
+  .proj:hover::before { opacity: 1; }
+  .thumb { aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); background: #07080b; }
+  .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .proj:hover .thumb img { transform: scale(1.04); }
+  .proj-body { padding: 0 8px 8px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .proj-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .proj h3 { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  .yr { font: 13px var(--f-mono); color: var(--muted); }
+  .proj p { margin: 0; font-size: 15px; color: #a9afbb; }
+  .metric { font: 500 13px var(--f-mono); color: var(--live); }
+  .more { font: 500 13px var(--f-mono); color: var(--ice); display: inline-flex; gap: 6px; margin-top: auto; padding-top: 2px; }
+  .more span { transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1); }
+  .proj:hover .more span { transform: translateX(4px); }
+  @media (max-width: 900px) { .projects { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .projects { grid-template-columns: 1fr; } }
+
+  /* ---------- Fenêtre projet ---------- */
+  .pm { padding: 0; border: 0; background: transparent; color: var(--fg); width: min(1080px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; overflow: visible; }
+  .pm:focus, .pm:focus-visible { outline: none; }
+  .pm::backdrop { background: rgba(2, 3, 6, 0.62); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .pm[open] .pm-panel { animation: pmIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.12); }
+  @keyframes pmIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } }
+  .pm-panel { --r: 30px; background: rgba(11, 13, 18, 0.94); max-height: calc(100dvh - 32px); overflow: auto; overscroll-behavior: contain; padding: clamp(18px, 3vw, 34px); display: flex; flex-direction: column; gap: 22px; }
+  .pm-panel > * { flex-shrink: 0; }
+  .pm-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .pm-head > div { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .pm-eyebrow { font: 500 12px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .pm-title { font-family: var(--f-display); font-weight: 400; font-size: clamp(22px, 3.6vw, 40px); line-height: 1.05; text-transform: uppercase; letter-spacing: 0.03em; margin: 0; text-wrap: balance; }
+  .pm-tag { margin: 0; font-size: 17px; font-weight: 300; color: #b9bfcb; }
+  .pm-x {
+    flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; color: var(--fg); font-size: 20px; line-height: 1;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 1px 1px 0 -0.5px rgba(255, 255, 255, 0.45), inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.15);
+    transition: background 0.2s, transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  .pm-x:hover { background: rgba(255, 255, 255, 0.12); transform: rotate(90deg); }
+  .pm-viewer { position: relative; border-radius: 20px; overflow: hidden; aspect-ratio: 16 / 10; max-width: 100%; background: radial-gradient(circle at 50% 30%, #14171e, #050608 70%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+  .pm-viewer img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: opacity 0.25s ease; }
+  .pm-viewer img.mobile { padding: 16px 0; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6)); }
+  .pm-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; color: #fff; font-size: 22px;
+    background: rgba(8, 9, 12, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 1px 1px 0 -0.5px rgba(255, 255, 255, 0.45), inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.15);
+    transition: background 0.2s;
+  }
+  .pm-nav:hover { background: rgba(8, 9, 12, 0.8); }
+  .pm-prev { left: 12px; }
+  .pm-next { right: 12px; }
+  .pm-count { position: absolute; right: 14px; bottom: 14px; font: 500 12px var(--f-mono); padding: 5px 11px; border-radius: 999px; background: rgba(8, 9, 12, 0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .pm-cap { margin: -10px 0 0; font: 13px var(--f-mono); color: var(--muted); }
+  .pm-thumbs { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; }
+  .pm-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 30px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 24px; }
+  .pm-body h3 { margin: 0 0 12px; font: 500 12px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .pm-desc { margin: 0 0 22px; font-size: 17px; font-weight: 300; color: #d2d6de; max-width: 62ch; }
+  .pm-feat { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .pm-aside { display: flex; flex-direction: column; gap: 22px; }
+  .pm-aside .chips { gap: 8px; }
+  .pm-metric { font: 500 14px var(--f-mono); color: var(--live); }
+  .pm-links { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .pm-links:empty { display: none; }
+  .pm-note { font: 12px var(--f-mono); color: var(--dim); }
+  @media (max-width: 760px) {
+    .pm-body { grid-template-columns: 1fr; gap: 24px; }
+    .pm-viewer { aspect-ratio: 4 / 3; }
+    .pm-nav { width: 40px; height: 40px; }
+  }
+  @media (max-width: 520px) {
+    .pm { width: 100vw; max-height: 100dvh; margin: auto 0 0; }
+    .pm-panel { --r: 26px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; max-height: 94dvh; }
+  }
+
+  /* éléments créés par le script : hors portée des styles scopés */
+  .pm-thumbs :global(button) {
+    flex: none; width: 118px; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; border: 0; padding: 0; cursor: pointer; background: #07080b; opacity: 0.5;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); transition: opacity 0.2s, box-shadow 0.2s;
+  }
+  .pm-thumbs :global(button:hover) { opacity: 0.8; }
+  .pm-thumbs :global(button[aria-current='true']) { opacity: 1; box-shadow: 0 0 0 2px var(--ice); }
+  .pm-thumbs :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .pm-thumbs :global(img.mobile) { object-fit: contain; }
+  .pm-feat :global(li) { position: relative; padding-left: 20px; font-size: 15px; color: #b5bbc7; }
+  .pm-feat :global(li)::before { content: ''; position: absolute; left: 2px; top: 0.6em; width: 7px; height: 7px; border-radius: 50%; background: var(--ice); box-shadow: 0 0 8px rgba(169, 220, 255, 0.6); }
+  @media (max-width: 520px) { .pm-thumbs :global(button) { width: 92px; } }
+</style>
+
+<script>
+  import type { Project } from '../data/projects';
+
+  const projects: Project[] = JSON.parse(document.getElementById('projects-data')!.textContent || '[]');
+  const byId = new Map(projects.map((p) => [p.id, p]));
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  const dlg = $<HTMLDialogElement>('pm');
+  const panel = dlg.querySelector<HTMLElement>('.pm-panel')!;
+  const main = $<HTMLImageElement>('pm-img');
+  const thumbs = $('pm-thumbs');
+  let cur: Project | null = null;
+  let idx = 0;
+  let lastFocus: HTMLElement | null = null;
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, text?: string) {
+    const e = Object.assign(document.createElement(tag), props);
+    if (text) e.textContent = text;
+    return e;
+  }
+
+  function show(i: number) {
+    if (!cur) return;
+    const imgs = cur.images;
+    idx = (i + imgs.length) % imgs.length;
+    const im = imgs[idx];
+    main.style.opacity = '0';
+    setTimeout(() => {
+      main.src = im.src;
+      main.alt = im.alt;
+      main.className = im.mobile ? 'mobile' : '';
+      main.style.opacity = '1';
+    }, 120);
+    $('pm-cap').textContent = im.alt;
+    $('pm-count').textContent = `${idx + 1} / ${imgs.length}`;
+    [...thumbs.children].forEach((b, j) => b.setAttribute('aria-current', String(j === idx)));
+    const single = imgs.length < 2;
+    $('pm-prev').hidden = single;
+    $('pm-next').hidden = single;
+  }
+
+  function fill(p: Project) {
+    $('pm-eyebrow').textContent = `${p.kind} · ${p.year}`;
+    $('pm-title').textContent = p.title;
+    $('pm-tag').textContent = p.tag;
+    $('pm-desc').textContent = p.description;
+    $('pm-metric').textContent = p.metric;
+    $('pm-note').textContent = p.note ?? '';
+    $('pm-feat').replaceChildren(...p.features.map((f) => el('li', {}, f)));
+    $('pm-stack').replaceChildren(...p.stack.map((s) => el('span', { className: 'chip' }, s)));
+    $('pm-links').replaceChildren(
+      ...p.links.map((l) => el('a', { className: 'btn solid', href: l.href, target: '_blank', rel: 'noopener' }, `${l.label} ↗`)),
+    );
+    thumbs.replaceChildren(
+      ...p.images.map((im, j) => {
+        const b = el('button', { type: 'button', ariaLabel: `Capture ${j + 1}` });
+        b.append(el('img', { src: im.src, alt: '', className: im.mobile ? 'mobile' : '', loading: 'lazy' }));
+        b.addEventListener('click', () => show(j));
+        return b;
+      }),
+    );
+    show(0);
+  }
+
+  function open(id: string) {
+    const p = byId.get(id);
+    if (!p) return;
+    if (cur !== p) { cur = p; fill(p); }
+    if (!dlg.open) {
+      dlg.showModal();
+      document.documentElement.classList.add('modal-open');
+    }
+    panel.scrollTop = 0;
+  }
+
+  function route() {
+    const id = location.hash.slice(1);
+    if (byId.has(id)) open(id);
+    else if (dlg.open) dlg.close();
+  }
+
+  dlg.addEventListener('close', () => {
+    document.documentElement.classList.remove('modal-open');
+    if (byId.has(location.hash.slice(1))) history.replaceState(null, '', location.pathname + location.search);
+    lastFocus?.focus({ preventScroll: true });
+  });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { show(idx - 1); e.preventDefault(); }
+    if (e.key === 'ArrowRight') { show(idx + 1); e.preventDefault(); }
+  });
+  $('pm-x').addEventListener('click', () => dlg.close());
+  $('pm-prev').addEventListener('click', () => show(idx - 1));
+  $('pm-next').addEventListener('click', () => show(idx + 1));
+
+  // glisser du doigt sur la capture
+  let startX: number | null = null;
+  const viewer = $('pm-viewer');
+  viewer.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+  viewer.addEventListener('touchend', (e) => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) show(idx + (dx < 0 ? 1 : -1));
+    startX = null;
+  });
+
+  document.querySelectorAll<HTMLAnchorElement>('.proj[data-p]').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      lastFocus = card;
+      const id = card.dataset.p!;
+      if (location.hash.slice(1) === id) open(id);
+      else location.hash = id;
+    });
+    // reflet sous le curseur
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--px', ((e.clientX - r.left) / r.width) * 100 + '%');
+      card.style.setProperty('--py', ((e.clientY - r.top) / r.height) * 100 + '%');
+    });
+  });
+
+  addEventListener('hashchange', route);
+  route();
+</script>

@@ -1,0 +1,120 @@
+---
+// Fond fixe : grille, faisceau de lumière et gouttes de métal liquide qui fusionnent (filtre SVG « goo »).
+// Les couleurs restent sombres (luminance ≈ 0,12 au plus hors du petit reflet) pour que le texte clair reste lisible.
+---
+
+<svg width="0" height="0" class="goo-defs" aria-hidden="true">
+  <filter id="goo">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="b"></feGaussianBlur>
+    <feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -13"></feColorMatrix>
+  </filter>
+</svg>
+
+<div class="bg" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="beam"></div>
+  <div class="liquid">
+    <span class="blob blue b1"></span>
+    <span class="blob green b2"></span>
+    <span class="blob teal b3"></span>
+    <span class="blob green b4"></span>
+    <span class="blob blue b5"></span>
+    <span class="blob teal b6"></span>
+    <span class="blob mint cursor" id="cursor-blob"></span>
+  </div>
+</div>
+
+<style>
+  .goo-defs { position: absolute; }
+  .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .grid {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px) 0 0 / 64px 64px,
+      linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px) 0 0 / 64px 64px;
+    -webkit-mask-image: radial-gradient(80vmax circle at 65% 15%, #000, transparent 75%);
+    mask-image: radial-gradient(80vmax circle at 65% 15%, #000, transparent 75%);
+  }
+  .beam {
+    position: absolute;
+    top: -20vh;
+    left: 58%;
+    width: 90vw;
+    height: 130vh;
+    transform: translateX(-50%);
+    background: conic-gradient(from 180deg at 50% 0%, transparent 165deg, rgba(190, 215, 255, 0.07) 180deg, transparent 195deg);
+    filter: blur(14px);
+  }
+  .liquid { position: absolute; inset: 0; filter: url(#goo); }
+  .blob { position: absolute; border-radius: 50%; will-change: transform; }
+  .blue { background: radial-gradient(circle at 32% 28%, #5fa8ff 0%, #2a5fb0 9%, #163a74 30%, #0b1d3d 58%, #050b17 82%); }
+  .green { background: radial-gradient(circle at 30% 30%, #5ff0b8 0%, #1f8a62 9%, #0f5540 30%, #072a20 60%, #03110d 82%); }
+  .teal { background: radial-gradient(circle at 30% 30%, #56dbe6 0%, #1a7f8c 9%, #0d4a55 32%, #06252c 60%, #020f12 82%); }
+  .mint { background: radial-gradient(circle at 30% 30%, #7cf5c6 0%, #22997a 10%, #0f5a52 34%, #072b2b 62%, #031212 82%); }
+
+  .b1 { width: 34vmax; height: 34vmax; left: 52vw; top: -6vmax; animation: w1 19s ease-in-out infinite; }
+  .b2 { width: 20vmax; height: 20vmax; left: 72vw; top: 18vmax; animation: w2 14s ease-in-out infinite; }
+  .b3 { width: 14vmax; height: 14vmax; left: 40vw; top: 24vmax; animation: w3 16s ease-in-out infinite; }
+  .b4 { width: 24vmax; height: 24vmax; left: -6vw; top: 58vh; animation: w2 21s ease-in-out infinite reverse; }
+  .b5 { width: 12vmax; height: 12vmax; left: 16vw; top: 76vh; animation: w3 13s ease-in-out infinite reverse; }
+  .b6 { width: 16vmax; height: 16vmax; left: 80vw; top: 70vh; animation: w1 17s ease-in-out infinite reverse; }
+  .cursor { width: 11vmax; height: 11vmax; left: 62vw; top: 32vh; transform: translate(-50%, -50%); }
+
+  @keyframes w1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(-11vmax, 6vmax) scale(1.1); }
+    50% { transform: translate(-4vmax, 15vmax) scale(0.92); }
+    75% { transform: translate(7vmax, 5vmax) scale(1.06); }
+  }
+  @keyframes w2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    30% { transform: translate(9vmax, -9vmax) scale(0.88); }
+    60% { transform: translate(-8vmax, -3vmax) scale(1.14); }
+    80% { transform: translate(-2vmax, 7vmax) scale(0.96); }
+  }
+  @keyframes w3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    20% { transform: translate(12vmax, 4vmax) scale(1.16); }
+    55% { transform: translate(4vmax, -10vmax) scale(0.9); }
+    80% { transform: translate(-9vmax, -2vmax) scale(1.05); }
+  }
+
+  /* Voile : assombrit le côté gauche (le texte) et le bas, laisse respirer la droite */
+  .bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(3, 3, 4, 0.62) 0%, rgba(3, 3, 4, 0.38) 45%, rgba(3, 3, 4, 0.12) 75%, rgba(3, 3, 4, 0.3) 100%),
+      linear-gradient(180deg, rgba(3, 3, 4, 0) 55%, rgba(3, 3, 4, 0.45) 100%);
+  }
+</style>
+
+<script>
+  // Goutte qui suit la souris (avec inertie) et parallaxe des autres au défilement.
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cursor = document.getElementById('cursor-blob');
+  const blobs = [...document.querySelectorAll<HTMLElement>('.liquid .blob:not(.cursor)')];
+  const speeds = [0.06, 0.12, 0.04, 0.1, 0.14, 0.08];
+
+  if (!reduce && cursor) {
+    let x = innerWidth * 0.62, y = innerHeight * 0.32, tx = x, ty = y;
+    addEventListener('pointermove', (e) => { tx = e.clientX; ty = e.clientY; }, { passive: true });
+    const loop = () => {
+      x += (tx - x) * 0.08;
+      y += (ty - y) * 0.08;
+      cursor.style.left = x + 'px';
+      cursor.style.top = y + 'px';
+      requestAnimationFrame(loop);
+    };
+    loop();
+
+    let ticking = false;
+    const apply = () => {
+      blobs.forEach((b, i) => { b.style.translate = `0 ${(-scrollY * speeds[i % speeds.length]).toFixed(1)}px`; });
+      ticking = false;
+    };
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(apply); } }, { passive: true });
+  }
+</script>

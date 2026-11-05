@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import Background from '../components/Background.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Projects from '../components/Projects.astro';
+import Profile from '../components/Profile.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../data/site';
+
+const links = site.links.filter((l) => l.href);
+---
+
+<Base>
+  <Background />
+  <div class="page">
+    <Nav />
+    <main class="wrap">
+      <Hero />
+      <Projects />
+      <Profile />
+      <Contact />
+    </main>
+    <footer class="wrap">
+      <span>© {new Date().getFullYear()} {site.name}</span>
+      {
+        links.length > 0 && (
+          <nav aria-label="Liens">
+            {links.map((l) => (
+              <a href={l.href} target="_blank" rel="noopener">
+                {l.label}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </footer>
+  </div>
+</Base>
+
+<style>
+  footer {
+    padding-block: 40px 56px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font: 13px var(--f-mono);
+    color: var(--dim);
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.9);
+  }
+  footer nav { display: flex; gap: 18px; }
+  footer a { text-decoration: none; color: var(--muted); }
+  footer a:hover { color: var(--fg); }
+</style>

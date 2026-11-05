@@ -1,0 +1,43 @@
+---
+import { site } from '../data/site';
+const [first, ...rest] = site.name.split(' ');
+---
+
+<section class="hero" id="accueil">
+  {
+    site.availability.available && (
+      <span class="pill glass">
+        <i aria-hidden="true" />
+        {site.availability.label}
+      </span>
+    )
+  }
+  <h1 class="name chrome">{first}<br />{rest.join(' ')}</h1>
+  <p class="lead on-bg">{site.lead}</p>
+  <div class="ctas">
+    <a class="btn solid" href="#travaux">Voir les projets</a>
+    <a class="btn glass" href="#contact">Me contacter</a>
+  </div>
+  <span class="scroll on-bg" aria-hidden="true">Défiler ↓</span>
+</section>
+
+<style>
+  .hero { min-height: min(820px, 88vh); display: flex; flex-direction: column; justify-content: center; gap: 28px; padding-block: 72px 96px; }
+  .pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; font: 500 13px var(--f-mono); padding: 9px 18px; border-radius: 999px; background: rgba(9, 11, 15, 0.5); }
+  .pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 2px var(--live); opacity: 0.6; } }
+  .name {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(40px, 9vw, 124px);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    text-wrap: balance;
+    filter: drop-shadow(0 6px 26px rgba(0, 0, 0, 0.7));
+  }
+  .lead { font-size: clamp(17px, 1.8vw, 21px); font-weight: 300; color: #b9bfcb; max-width: 52ch; margin: 0; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .scroll { font: 12px var(--f-mono); color: var(--dim); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 24px; }
+</style>
