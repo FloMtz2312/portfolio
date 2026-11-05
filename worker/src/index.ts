@@ -18,8 +18,8 @@ export default {
     const cors: Record<string, string> = allowed.includes(origin)
       ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'POST', Vary: 'Origin' }
       : {};
-    const reply = (status: number, error?: string) =>
-      Response.json(error ? { ok: false, error } : { ok: true }, { status, headers: cors });
+    const reply = (status: number, error?: string, codes?: string[]) =>
+      Response.json(error ? { ok: false, error, ...(codes ? { codes } : {}) } : { ok: true }, { status, headers: cors });
 
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     if (req.method !== 'POST') return reply(405, 'Méthode non autorisée.');
@@ -43,13 +43,26 @@ export default {
     if (!EMAIL.test(email) || email.length > 200) return reply(400, 'Adresse e-mail invalide.');
     if (message.length < 10 || message.length > 5000) return reply(400, 'Le message doit faire entre 10 et 5000 caractères.');
 
+    const token = field('cf-turnstile-response');
+    if (!token) return reply(400, 'Coche la case anti-robot avant d’envoyer (elle peut mettre quelques secondes à apparaître).', ['missing-input-response']);
+
     const check = new FormData();
-    check.append('secret', env.TURNSTILE_SECRET);
-    check.append('response', field('cf-turnstile-response'));
+    check.append('secret', env.TURNSTILE_SECRET ?? '');
+    check.append('response', token);
     const ip = req.headers.get('CF-Connecting-IP');
     if (ip) check.append('remoteip', ip);
-    const verdict = (await (await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: check })).json()) as { success: boolean };
-    if (!verdict.success) return reply(403, 'Vérification anti-robot échouée, réessaie.');
+    const verdict = (await (await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: check })).json()) as {
+      success: boolean;
+      'error-codes'?: string[];
+      hostname?: string;
+    };
+    if (!verdict.success) {
+      // Codes Turnstile (non secrets) renvoyés pour le diagnostic, ex. invalid-input-secret = mauvaise clé secrète,
+      // timeout-or-duplicate = jeton expiré ou déjà utilisé.
+      const codes = verdict['error-codes'] ?? [];
+      console.warn('Turnstile refusé', codes, verdict.hostname);
+      return reply(403, 'Vérification anti-robot échouée, réessaie.', codes);
+    }
 
     const sent = await fetch('https://api.resend.com/emails', {
       method: 'POST',
