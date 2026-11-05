@@ -47,7 +47,7 @@ export default {
     if (!token) return reply(400, 'Coche la case anti-robot avant d’envoyer (elle peut mettre quelques secondes à apparaître).', ['missing-input-response']);
 
     const check = new FormData();
-    check.append('secret', env.TURNSTILE_SECRET ?? '');
+    check.append('secret', (env.TURNSTILE_SECRET ?? '').trim());
     check.append('response', token);
     const ip = req.headers.get('CF-Connecting-IP');
     if (ip) check.append('remoteip', ip);
@@ -66,10 +66,10 @@ export default {
 
     const sent = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${(env.RESEND_API_KEY ?? '').trim()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from: env.FROM_EMAIL,
-        to: [env.TO_EMAIL],
+        to: [(env.TO_EMAIL ?? '').trim()],
         reply_to: email,
         subject: `Portfolio · message de ${name}`,
         text: `${name} <${email}>\n\n${message}`,
