@@ -143,12 +143,12 @@ const { endpoint, turnstileSiteKey } = site.contactForm;
         const data = (await res.json()) as { ok: boolean; error?: string };
         if (data.ok) {
           form.reset();
-          say('Message envoyé, merci ! Je te réponds vite.', 'ok');
+          say('Merci, votre message est bien envoyé. Je vous réponds sous 48 h.', 'ok');
         } else {
-          say(data.error || 'L’envoi a échoué, écris-moi directement par e-mail.', 'err');
+          say(data.error || 'L’envoi a échoué, écrivez-moi directement par e-mail.', 'err');
         }
       } catch {
-        say('L’envoi a échoué, écris-moi directement par e-mail.', 'err');
+        say('L’envoi a échoué, écrivez-moi directement par e-mail.', 'err');
       } finally {
         // Un jeton Turnstile ne sert qu'une fois : on en redemande un pour l'envoi suivant.
         const w = window as any;

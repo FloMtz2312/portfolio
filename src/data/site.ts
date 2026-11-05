@@ -6,16 +6,14 @@ export const site = {
   role: 'Développeur web',
   title: 'Florian Martinez · Développeur web',
   description:
-    'Portfolio de Florian Martinez, développeur web : tableaux de bord temps réel, sites vitrines et outils back-end en Go, Vue et Svelte.',
-  lead: 'Développeur web. Je conçois des interfaces précises et performantes, du premier pixel jusqu’à la mise en production.',
+    'Portfolio de Florian Martinez, développeur web full-stack depuis 2021 : plateformes de monitoring, tableaux de bord temps réel et sites vitrines. Disponible en CDI ou en freelance.',
+  lead: 'Développeur web full-stack depuis 2021. Je conçois des applications web fiables, du serveur jusqu’à l’interface, et je les accompagne jusqu’en production.',
 
   // Badge en haut de page. Mettre `available: false` pour le masquer.
-  // À CONFIRMER : texte d'exemple.
-  availability: { available: true, label: 'Disponible · Janvier 2027' },
+  availability: { available: true, label: 'Disponible maintenant · CDI ou freelance' },
 
-  // À CONFIRMER : adresse d'exemple, à remplacer par la vraie.
-  email: 'bonjour@florian.dev',
-  contactNote: 'Réponse sous 24 heures, du lundi au vendredi.',
+  email: 'florian_martinez1@outlook.com',
+  contactNote: 'Réponse sous 48 h.',
 
   // Formulaire de contact (Worker Cloudflare + Resend, voir worker/ et le README).
   // Tant que `endpoint` est vide, le formulaire est masqué. La clé de site Turnstile est publique.
@@ -31,12 +29,13 @@ export const site = {
   ],
 };
 
-// Bloc « Profil ». À CONFIRMER : texte d'exemple, à réécrire avec ton parcours.
+// Bloc « Profil ».
 export const profile = {
-  badge: '',
+  badge: 'Développeur depuis 2021',
   paragraphs: [
-    'Je travaille à la frontière entre le design et l’ingénierie. J’aime les interfaces qui paraissent simples parce que tout le travail est caché derrière.',
-    'Je construis aussi bien le back-end en Go que l’interface en Vue ou en Svelte, et je m’occupe du déploiement jusqu’en production.',
+    'Développeur web full-stack depuis 2021, je suis diplômé d’une licence APIDAE à l’Université de Montpellier.',
+    'Aujourd’hui développeur web chez Pyrescom, je développe la plateforme de monitoring des produits EPNRJ et BATNRJ, côté serveur comme côté interface.',
+    'Je suis ouvert à un CDI en hybride comme à des missions freelance en télétravail.',
   ],
   stack: [
     { name: 'Go', use: 'back-end' },

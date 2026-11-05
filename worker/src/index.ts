@@ -43,13 +43,13 @@ export default {
     // Champ piège invisible : un humain le laisse vide. On répond « ok » pour ne rien apprendre au robot.
     if (field('website')) return reply(200);
 
-    if (!name || name.length > 100) return reply(400, 'Indique ton nom (100 caractères max).');
+    if (!name || name.length > 100) return reply(400, 'Indiquez votre nom (100 caractères max).');
     if (!EMAIL.test(email) || email.length > 200) return reply(400, 'Adresse e-mail invalide.');
     if (message.length < 10 || message.length > 5000) return reply(400, 'Le message doit faire entre 10 et 5000 caractères.');
 
     const token = field('cf-turnstile-response');
-    if (!token) return reply(400, 'Coche la case anti-robot avant d’envoyer (elle peut mettre quelques secondes à apparaître).', ['missing-input-response']);
-    if (token.length > 2048) return reply(403, 'Vérification anti-robot échouée, réessaie.', ['invalid-input-response']);
+    if (!token) return reply(400, 'Cochez la case anti-robot avant d’envoyer (elle peut mettre quelques secondes à apparaître).', ['missing-input-response']);
+    if (token.length > 2048) return reply(403, 'Vérification anti-robot échouée, réessayez.', ['invalid-input-response']);
 
     const check = new FormData();
     check.append('secret', (env.TURNSTILE_SECRET ?? '').trim());
@@ -66,7 +66,7 @@ export default {
       verdict = await res.json();
     } catch (err) {
       console.error('Turnstile injoignable', err);
-      return reply(503, 'Vérification anti-robot indisponible, réessaie dans un instant.', ['siteverify-unreachable']);
+      return reply(503, 'Vérification anti-robot indisponible, réessayez dans un instant.', ['siteverify-unreachable']);
     }
     // Le jeton doit venir du widget de ce formulaire (action) et d'un domaine autorisé (hostname).
     const hostnames = (env.TURNSTILE_HOSTNAMES ?? '').split(',').map((h) => h.trim()).filter(Boolean);
@@ -77,7 +77,7 @@ export default {
       // Codes Turnstile (non secrets) renvoyés pour le diagnostic, ex. invalid-input-secret = mauvaise clé secrète,
       // timeout-or-duplicate = jeton expiré ou déjà utilisé.
       console.warn('Turnstile refusé', codes, verdict.hostname, verdict.action);
-      return reply(403, 'Vérification anti-robot échouée, réessaie.', codes);
+      return reply(403, 'Vérification anti-robot échouée, réessayez.', codes);
     }
 
     const sent = await fetch('https://api.resend.com/emails', {
@@ -92,7 +92,7 @@ export default {
     });
     if (!sent.ok) {
       console.error('Resend', sent.status, await sent.text());
-      return reply(502, 'L’envoi a échoué, écris-moi directement par e-mail.');
+      return reply(502, 'L’envoi a échoué, écrivez-moi directement par e-mail.');
     }
     return reply(200);
   },
