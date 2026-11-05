@@ -15,3 +15,7 @@ npm-debug.log*
 # systèmes
 .DS_Store
 Thumbs.db
+
+# worker (secrets locaux, cache wrangler)
+worker/.dev.vars
+worker/.wrangler/

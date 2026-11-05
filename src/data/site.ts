@@ -17,6 +17,13 @@ export const site = {
   email: 'bonjour@florian.dev',
   contactNote: 'Réponse sous 24 heures, du lundi au vendredi.',
 
+  // Formulaire de contact (Worker Cloudflare + Resend, voir worker/ et le README).
+  // Tant que `endpoint` est vide, le formulaire est masqué. La clé de site Turnstile est publique.
+  contactForm: {
+    endpoint: '',
+    turnstileSiteKey: '',
+  },
+
   // Liens affichés dans le pied de page. Laisser `href` vide pour masquer un lien.
   links: [
     { label: 'GitHub', href: 'https://github.com/FloMtz2312' },

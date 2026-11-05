@@ -22,6 +22,16 @@ const ogImage = new URL(base + 'projects/cod4-monitor/live.webp', Astro.site);
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={base + 'favicon.svg'} />
     <meta name="theme-color" content="#030304" />
+    <script is:inline>
+      // Avant le premier rendu pour éviter un flash : choix enregistré, sinon préférence système.
+      (() => {
+        let t;
+        try { t = localStorage.getItem('theme'); } catch {}
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        document.documentElement.dataset.theme = t;
+        document.querySelector('meta[name="theme-color"]').content = t === 'light' ? '#eceef2' : '#030304';
+      })();
+    </script>
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="fr_FR" />

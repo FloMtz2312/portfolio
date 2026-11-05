@@ -42,11 +42,12 @@ src/
     Hero.astro         introduction
     Projects.astro     cartes + fenêtre de détail (galerie, clavier, glisser du doigt)
     Profile.astro      bloc Profil
-    Contact.astro      contact, bouton « Copier l'adresse »
+    Contact.astro      contact : « Copier l’adresse » et formulaire (envoyé au Worker)
   data/                contenu (voir plus haut)
   layouts/Base.astro   <head> : titre, description, Open Graph, polices
   pages/index.astro    page unique
   styles/global.css    couleurs, polices, verre, boutons
+worker/               Worker Cloudflare du formulaire (Turnstile + Resend)
 public/
   projects/            captures des projets
   favicon.svg
@@ -65,3 +66,32 @@ L'adresse dépend de `base` dans `astro.config.mjs` : `/portfolio` pour ce dép�
 ## Captures
 
 Les captures de CoD4 Monitor ont été faites avec des données de démonstration (parties et joueurs fictifs). Celles de Dev Finder viennent d'une vraie collecte de novembre 2026.
+
+## Formulaire de contact (Resend)
+
+GitHub Pages ne sert que des fichiers statiques : la clé Resend ne peut pas être dans la page. Le formulaire envoie donc ses données à un petit Worker Cloudflare (`worker/`), qui vérifie le captcha Turnstile, filtre les robots (champ piège) puis appelle Resend. Tant que `contactForm.endpoint` est vide dans `src/data/site.ts`, le formulaire est masqué.
+
+Mise en place (une fois) :
+
+1. **Resend** : créer une clé API (resend.com → API Keys). Sans domaine vérifié, l'expéditeur `onboarding@resend.dev` ne peut écrire qu'à l'adresse du compte Resend, ce qui suffit ici. Avec un domaine, changer `FROM_EMAIL` dans `worker/wrangler.jsonc`.
+2. **Turnstile** : tableau de bord Cloudflare → Turnstile → ajouter un widget, domaines `flomtz2312.github.io` et `localhost`. Noter la clé de site et la clé secrète.
+3. **Worker** :
+   ```sh
+   cd worker
+   npx wrangler login
+   npx wrangler secret put RESEND_API_KEY
+   npx wrangler secret put TURNSTILE_SECRET
+   npx wrangler secret put TO_EMAIL        # adresse qui reçoit les messages
+   npx wrangler deploy                     # affiche l'URL https://portfolio-contact.<compte>.workers.dev
+   ```
+4. Dans `src/data/site.ts`, renseigner `contactForm.endpoint` (URL du Worker) et `contactForm.turnstileSiteKey`.
+
+En local : `worker/.dev.vars` (ignoré par git) avec les clés de test Turnstile, puis `npx wrangler dev` dans `worker/` et `endpoint: 'http://localhost:8787'`.
+
+```
+RESEND_API_KEY=re_...
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+TO_EMAIL=ton@adresse
+```
+
+Clé de site de test (toujours valide) : `1x00000000000000000000AA`.

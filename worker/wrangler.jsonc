@@ -1,0 +1,13 @@
+// Worker du formulaire de contact. Déploiement : voir README (section « Formulaire de contact »).
+{
+  "name": "portfolio-contact",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "vars": {
+    // Sans domaine vérifié chez Resend, seul onboarding@resend.dev fonctionne,
+    // et uniquement vers l'adresse de ton compte Resend.
+    "FROM_EMAIL": "Portfolio <onboarding@resend.dev>",
+    "ALLOWED_ORIGINS": "https://flomtz2312.github.io,http://localhost:4321"
+  }
+  // Secrets (jamais dans ce fichier) : RESEND_API_KEY, TURNSTILE_SECRET, TO_EMAIL
+}

@@ -31,8 +31,8 @@
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px) 0 0 / 64px 64px,
-      linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px) 0 0 / 64px 64px;
+      linear-gradient(rgba(var(--ink), 0.055) 1px, transparent 1px) 0 0 / 64px 64px,
+      linear-gradient(90deg, rgba(var(--ink), 0.055) 1px, transparent 1px) 0 0 / 64px 64px;
     -webkit-mask-image: radial-gradient(80vmax circle at 65% 15%, #000, transparent 75%);
     mask-image: radial-gradient(80vmax circle at 65% 15%, #000, transparent 75%);
   }
@@ -78,6 +78,18 @@
     20% { transform: translate(12vmax, 4vmax) scale(1.16); }
     55% { transform: translate(4vmax, -10vmax) scale(0.9); }
     80% { transform: translate(-9vmax, -2vmax) scale(1.05); }
+  }
+
+  /* Thème clair : gouttes pastel (reflet blanc, bord plus soutenu) et voile clair */
+  :global([data-theme='light']) .blue { background: radial-gradient(circle at 32% 28%, #ffffff 0%, #d3e4ff 10%, #93b9f0 36%, #5f8cd6 66%, #4b75bd 86%); }
+  :global([data-theme='light']) .green { background: radial-gradient(circle at 30% 30%, #ffffff 0%, #c9f7e3 10%, #7fd8b2 36%, #45b086 66%, #33946f 86%); }
+  :global([data-theme='light']) .teal { background: radial-gradient(circle at 30% 30%, #ffffff 0%, #c8f1f5 10%, #7fd0da 36%, #44a6b3 66%, #318896 86%); }
+  :global([data-theme='light']) .mint { background: radial-gradient(circle at 30% 30%, #ffffff 0%, #d2fbea 10%, #8fe6c4 36%, #4fbd98 66%, #3a9c7d 86%); }
+  :global([data-theme='light']) .beam { display: none; }
+  :global([data-theme='light']) .bg::after {
+    background:
+      linear-gradient(90deg, rgba(236, 238, 242, 0.72) 0%, rgba(236, 238, 242, 0.5) 45%, rgba(236, 238, 242, 0.18) 75%, rgba(236, 238, 242, 0.35) 100%),
+      linear-gradient(180deg, rgba(236, 238, 242, 0) 55%, rgba(236, 238, 242, 0.5) 100%);
   }
 
   /* Voile : assombrit le côté gauche (le texte) et le bas, laisse respirer la droite */
