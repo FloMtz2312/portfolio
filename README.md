@@ -82,8 +82,10 @@ Mise en place (une fois) :
    npx wrangler secret put RESEND_API_KEY
    npx wrangler secret put TURNSTILE_SECRET
    npx wrangler secret put TO_EMAIL        # adresse qui reçoit les messages
-   npx wrangler deploy                     # affiche l'URL https://portfolio-contact.<compte>.workers.dev
+   npx wrangler deploy                     # affiche l'URL https://portfolio.<compte>.workers.dev
    ```
+
+   Sans PC, depuis le tableau de bord Cloudflare : **Workers & Pages → Create → Import a repository** → dépôt `portfolio`, **Root directory : `worker`** (sinon Cloudflare publie le site Astro à la place du Worker), puis les trois valeurs dans **Settings → Variables and Secrets**, type *Secret*. Le nom du Worker doit être celui de `name` dans `worker/wrangler.jsonc` (`portfolio`).
 4. Dans `src/data/site.ts`, renseigner `contactForm.endpoint` (URL du Worker) et `contactForm.turnstileSiteKey`.
 
 En local : `worker/.dev.vars` (ignoré par git) avec les clés de test Turnstile, puis `npx wrangler dev` dans `worker/` et `endpoint: 'http://localhost:8787'`.

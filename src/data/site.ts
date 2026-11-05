@@ -20,7 +20,7 @@ export const site = {
   // Formulaire de contact (Worker Cloudflare + Resend, voir worker/ et le README).
   // Tant que `endpoint` est vide, le formulaire est masqué. La clé de site Turnstile est publique.
   contactForm: {
-    endpoint: '',
+    endpoint: 'https://portfolio.florian-martinez1.workers.dev',
     turnstileSiteKey: '0x4AAAAAAF1ZqhiD_d4apGiD',
   },
 

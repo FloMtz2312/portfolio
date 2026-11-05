@@ -1,6 +1,6 @@
 // Worker du formulaire de contact. Déploiement : voir README (section « Formulaire de contact »).
 {
-  "name": "portfolio-contact",
+  "name": "portfolio",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
   "vars": {
