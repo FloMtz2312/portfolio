@@ -34,7 +34,7 @@ export const profile = {
   badge: 'Développeur depuis 2021',
   paragraphs: [
     'Développeur web full-stack depuis 2021, je suis diplômé d’une licence APIDAE à l’Université de Montpellier.',
-    'Aujourd’hui développeur web chez Pyrescom, je développe la plateforme de monitoring des produits EPNRJ et BATNRJ, côté serveur comme côté interface.',
+    'D’une plateforme de monitoring qui traite des données en temps réel au site vitrine d’une boutique qui ouvre ses portes, je prends en charge chaque projet de bout en bout : base de données, API, interface et mise en ligne.',
     'Je suis ouvert à un CDI en hybride comme à des missions freelance en télétravail.',
   ],
   stack: [
