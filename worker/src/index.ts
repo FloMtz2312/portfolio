@@ -1,6 +1,8 @@
 // Reçoit le formulaire de contact du portfolio, vérifie Turnstile puis envoie le message via Resend.
 // La clé Resend ne quitte jamais ce Worker.
 
+import { renderContactEmail } from './email';
+
 interface Env {
   RESEND_API_KEY: string; // secret
   TURNSTILE_SECRET: string; // secret
@@ -85,8 +87,7 @@ export default {
         from: env.FROM_EMAIL,
         to: [(env.TO_EMAIL ?? '').trim()],
         reply_to: email,
-        subject: `Portfolio · message de ${name}`,
-        text: `${name} <${email}>\n\n${message}`,
+        ...renderContactEmail({ name, email, message, receivedAt: new Date() }),
       }),
     });
     if (!sent.ok) {
