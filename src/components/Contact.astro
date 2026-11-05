@@ -33,7 +33,8 @@ const { endpoint, turnstileSiteKey } = site.contactForm;
           <label class="trap" aria-hidden="true">
             Site web <input name="website" tabindex="-1" autocomplete="off" />
           </label>
-          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto" data-size="flexible"></div>
+          {/* Rendu explicite (voir le script plus bas) pour garder l'identifiant du widget et le remettre à zéro après chaque envoi */}
+          <div class="turnstile" id="turnstile-box" data-sitekey={turnstileSiteKey} data-action="contact"></div>
           <div class="send">
             <button type="submit" class="btn solid">Envoyer</button>
             <span class="status" id="form-status" role="status"></span>
@@ -41,7 +42,24 @@ const { endpoint, turnstileSiteKey } = site.contactForm;
         </form>
       )
     }
-    {endpoint && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+    {
+      endpoint && (
+        <script is:inline>
+          // Appelé par l'API Turnstile une fois chargée (paramètre onload). L'identifiant sert à turnstile.reset().
+          window.onTurnstileLoad = function () {
+            var el = document.getElementById('turnstile-box');
+            if (!el || !window.turnstile) return;
+            window.turnstileWidgetId = window.turnstile.render(el, {
+              sitekey: el.dataset.sitekey,
+              action: el.dataset.action,
+              theme: 'auto',
+              size: 'flexible',
+            });
+          };
+        </script>
+      )
+    }
+    {endpoint && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>}
   </div>
 </section>
 
@@ -132,7 +150,9 @@ const { endpoint, turnstileSiteKey } = site.contactForm;
       } catch {
         say('L’envoi a échoué, écris-moi directement par e-mail.', 'err');
       } finally {
-        (window as any).turnstile?.reset();
+        // Un jeton Turnstile ne sert qu'une fois : on en redemande un pour l'envoi suivant.
+        const w = window as any;
+        if (w.turnstile && w.turnstileWidgetId !== undefined) w.turnstile.reset(w.turnstileWidgetId);
         button.disabled = false;
       }
     });

@@ -10,7 +10,10 @@
     // Sans domaine vérifié chez Resend, seul onboarding@resend.dev fonctionne,
     // et uniquement vers l'adresse de ton compte Resend.
     "FROM_EMAIL": "Portfolio <onboarding@resend.dev>",
-    "ALLOWED_ORIGINS": "https://flomtz2312.github.io,http://localhost:4321"
+    "ALLOWED_ORIGINS": "https://flomtz2312.github.io,http://localhost:4321",
+    // Domaines d'où un jeton Turnstile est accepté. Jamais localhost en production :
+    // pour « wrangler dev », le surcharger dans worker/.dev.vars.
+    "TURNSTILE_HOSTNAMES": "flomtz2312.github.io"
   }
   // Secrets (jamais dans ce fichier) : RESEND_API_KEY, TURNSTILE_SECRET, TO_EMAIL
 }

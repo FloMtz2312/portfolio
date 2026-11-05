@@ -7,9 +7,11 @@ interface Env {
   TO_EMAIL: string; // secret : ta boîte de réception (pas dans le dépôt public)
   FROM_EMAIL: string; // expéditeur vérifié chez Resend
   ALLOWED_ORIGINS: string; // origines autorisées, séparées par des virgules
+  TURNSTILE_HOSTNAMES: string; // domaines d'où un jeton Turnstile est accepté, séparés par des virgules
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TURNSTILE_ACTION = 'contact'; // même valeur que data-action du widget (src/components/Contact.astro)
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
@@ -45,22 +47,34 @@ export default {
 
     const token = field('cf-turnstile-response');
     if (!token) return reply(400, 'Coche la case anti-robot avant d’envoyer (elle peut mettre quelques secondes à apparaître).', ['missing-input-response']);
+    if (token.length > 2048) return reply(403, 'Vérification anti-robot échouée, réessaie.', ['invalid-input-response']);
 
     const check = new FormData();
     check.append('secret', (env.TURNSTILE_SECRET ?? '').trim());
     check.append('response', token);
     const ip = req.headers.get('CF-Connecting-IP');
     if (ip) check.append('remoteip', ip);
-    const verdict = (await (await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: check })).json()) as {
-      success: boolean;
-      'error-codes'?: string[];
-      hostname?: string;
-    };
-    if (!verdict.success) {
+    let verdict: { success: boolean; 'error-codes'?: string[]; hostname?: string; action?: string };
+    try {
+      const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: check,
+        signal: AbortSignal.timeout(10_000),
+      });
+      verdict = await res.json();
+    } catch (err) {
+      console.error('Turnstile injoignable', err);
+      return reply(503, 'Vérification anti-robot indisponible, réessaie dans un instant.', ['siteverify-unreachable']);
+    }
+    // Le jeton doit venir du widget de ce formulaire (action) et d'un domaine autorisé (hostname).
+    const hostnames = (env.TURNSTILE_HOSTNAMES ?? '').split(',').map((h) => h.trim()).filter(Boolean);
+    const codes = verdict['error-codes'] ?? [];
+    if (verdict.success && verdict.action !== TURNSTILE_ACTION) codes.push('action-mismatch');
+    if (verdict.success && !hostnames.includes(verdict.hostname ?? '')) codes.push('hostname-mismatch');
+    if (!verdict.success || codes.length) {
       // Codes Turnstile (non secrets) renvoyés pour le diagnostic, ex. invalid-input-secret = mauvaise clé secrète,
       // timeout-or-duplicate = jeton expiré ou déjà utilisé.
-      const codes = verdict['error-codes'] ?? [];
-      console.warn('Turnstile refusé', codes, verdict.hostname);
+      console.warn('Turnstile refusé', codes, verdict.hostname, verdict.action);
       return reply(403, 'Vérification anti-robot échouée, réessaie.', codes);
     }
 

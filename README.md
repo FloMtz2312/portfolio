@@ -94,6 +94,9 @@ En local : `worker/.dev.vars` (ignoré par git) avec les clés de test Turnstile
 RESEND_API_KEY=re_...
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
 TO_EMAIL=ton@adresse
+TURNSTILE_HOSTNAMES=localhost
 ```
+
+Le Worker vérifie aussi que le jeton vient du widget du formulaire (`action` = `contact`) et d’un domaine de `TURNSTILE_HOSTNAMES` (`flomtz2312.github.io` en production, jamais `localhost`).
 
 Clé de site de test (toujours valide) : `1x00000000000000000000AA`.
