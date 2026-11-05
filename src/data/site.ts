@@ -21,7 +21,7 @@ export const site = {
   // Tant que `endpoint` est vide, le formulaire est masqué. La clé de site Turnstile est publique.
   contactForm: {
     endpoint: '',
-    turnstileSiteKey: '',
+    turnstileSiteKey: '0x4AAAAAAF1ZqhiD_d4apGiD',
   },
 
   // Liens affichés dans le pied de page. Laisser `href` vide pour masquer un lien.
